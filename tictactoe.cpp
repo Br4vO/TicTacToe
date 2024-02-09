@@ -10,8 +10,6 @@ TicTacToe::TicTacToe(QWidget *parent)
     ui->setupUi(this);
 
     Init();
-    ResetBoard();
-
 }
 
 TicTacToe::~TicTacToe()
@@ -26,6 +24,7 @@ bool TicTacToe::Init()
 
     m_gameLogic = new GameLogic();
 
+    // Connects each button on the board with the TicTacToeButtonPress
     for (int column =0; column < m_gameLogic->GetColumns(); column++)
     {
         for (int row =0; row < m_gameLogic->GetRows(); row++)
@@ -34,7 +33,7 @@ bool TicTacToe::Init()
             Q_ASSERT(button != nullptr);
             m_TTTButtons[row][column] = button;
 
-            connect(button, &QPushButton::clicked, this, [this, button, row, column] {TicTacToe::TicTacToeButtonPress(button, row, column);});
+            connect(button, &QPushButton::clicked, this, [this, button, row, column] {TicTacToe::TicTacToeButtonPress(row, column);});
         }
     }
 
@@ -44,29 +43,51 @@ bool TicTacToe::Init()
     return bSuccess;
 }
 
+void TicTacToe::ComputerPlay()
+{
+    QPoint comSquareIndex;
+    // Execute computer move. Returns index of square computer chose. Need it to change button
+    GameState state = m_gameLogic->ComputerPlay(comSquareIndex);
+    if(state == GameState::WIN)
+    {
+        ui->gameOutput->setText("Computer win!");
+    }
+    else if(state == GameState::DRAW)
+    {
+        ui->gameOutput->setText("Game Draw");
+    }
+
+    Q_ASSERT(comSquareIndex.x() >= 0 && comSquareIndex.x() < m_gameLogic->GetRows());
+    Q_ASSERT(comSquareIndex.y() >= 0 && comSquareIndex.y() < m_gameLogic->GetColumns());
+
+    m_TTTButtons[comSquareIndex.x()][comSquareIndex.y()]->setText("O");
+    m_TTTButtons[comSquareIndex.x()][comSquareIndex.y()]->setEnabled(false);
+}
+
 // Slots
 //==================================================================================
 
-void TicTacToe::TicTacToeButtonPress(QPushButton* i_button, int i_row, int i_column)
+void TicTacToe::TicTacToeButtonPress(int i_row, int i_column)
 {
-    Q_ASSERT(i_button);
-    i_button->setText("X");
 
+    m_TTTButtons[i_row][i_column]->setText("X");
+    m_TTTButtons[i_row][i_column]->setEnabled(false);
 
     QPoint userSquareIndex {i_row, i_column};
     GameState state = m_gameLogic->UserPlay(userSquareIndex);
     if(state == GameState::WIN)
     {
         ui->gameOutput->setText("You win!");
-        return;
     }
     else if(state == GameState::DRAW)
     {
         ui->gameOutput->setText("Game Draw");
-        return;
+    }
+    else
+    {
+        ComputerPlay();
     }
 
-    ComputerPlay();
 }
 
 void TicTacToe::ResetBoard()
@@ -76,6 +97,7 @@ void TicTacToe::ResetBoard()
         for (int j =0; j < m_gameLogic->GetRows(); j++)
         {
             m_TTTButtons[j][i]->setText("");
+            m_TTTButtons[j][i]->setEnabled(true);
         }
     }
     ui->gameOutput->setText("");
@@ -89,22 +111,4 @@ void TicTacToe::ResetBoard()
 void TicTacToe::SettingsChanged()
 {
     ui->gameOutput->setText("Click ResetGame for settings to take effect.");
-}
-
-void TicTacToe::ComputerPlay()
-{
-    QPoint comSquareIndex;
-    GameState state = m_gameLogic->ComputerPlay(comSquareIndex);
-    if(state == GameState::WIN)
-    {
-        ui->gameOutput->setText("Computer win!");
-    }
-    else if(state == GameState::DRAW)
-    {
-        ui->gameOutput->setText("Game Draw");
-        return;
-    }
-
-    QPushButton* comButtonSelected = dynamic_cast<QPushButton*>(ui->ticTacToeLayout->itemAtPosition(comSquareIndex.x(), comSquareIndex.y())->widget());
-    comButtonSelected->setText("O");
 }

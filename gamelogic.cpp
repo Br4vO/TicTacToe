@@ -2,19 +2,23 @@
 #include <QRandomGenerator>
 
 GameLogic::GameLogic(QObject *parent)
-    : QObject{parent}, m_totalTiles(ROWCOUNT*COLUMNCOUNT)
+    : QObject{parent}, m_totalSquares(ROWCOUNT*COLUMNCOUNT), m_ticTacToeGrid{Marking::NOTMARKED}
 {}
 
 GameState GameLogic::UserPlay(QPoint i_index)
 {
+    // Currently only marks the board
     return MarkSquare(i_index, Marking::X);
 }
 
 GameState GameLogic::ComputerPlay(QPoint &o_index)
 {
-    Q_ASSERT(m_moveCounter < m_totalTiles);
+    Q_ASSERT(m_moveCounter < m_totalSquares);
 
+    // Generating random index for the board
     QPoint playPos {QRandomGenerator::global()->bounded(ROWCOUNT), QRandomGenerator::global()->bounded(COLUMNCOUNT)};
+    // If spot is already marked, keep looping around the board until we find an available spot
+    // This creates a very random opponent
     while (isChecked(playPos))
     {
         if (playPos.y() < (COLUMNCOUNT-1))
@@ -44,18 +48,20 @@ GameState GameLogic::ComputerPlay(QPoint &o_index)
 
 GameState GameLogic::MarkSquare(QPoint i_index, Marking i_marking)
 {
-    GameState bState = GameState::RUNNING;
-
     Q_ASSERT(i_index.x() < ROWCOUNT && i_index.y() < COLUMNCOUNT);
+
+    GameState bState = GameState::RUNNING;
+    // Mark square on Tic Tac Toe board with input mark
     m_ticTacToeGrid[i_index.x()][i_index.y()] = i_marking;
     qInfo("Marked square at row = %d & coloumn = %d!", i_index.x(), i_index.y());
 
-    // Nobody can win before 5 moves have been played
+    // No need to check for win untill at least one player have added a mark equal to rows or columns
     m_moveCounter++;
     if (m_moveCounter >= (ROWCOUNT + COLUMNCOUNT - 1))
     {
         bState = (CheckForWin(i_index, i_marking)) ? GameState::WIN : GameState::RUNNING;
-        if (bState != GameState::WIN && m_moveCounter >= m_totalTiles)
+        // If the last move was not a win and we have no more spaces, declare the game a draw
+        if (bState != GameState::WIN && m_moveCounter >= m_totalSquares)
             bState = GameState::DRAW;
     }
 
@@ -65,7 +71,7 @@ GameState GameLogic::MarkSquare(QPoint i_index, Marking i_marking)
 bool GameLogic::CheckForWin(QPoint i_index, Marking i_marking)
 {
     int rowIndex = 0;
-
+    // Check along row from left to right
     while(rowIndex < ROWCOUNT && m_ticTacToeGrid[rowIndex][i_index.y()] == i_marking)
     {
         rowIndex++;
@@ -73,7 +79,7 @@ bool GameLogic::CheckForWin(QPoint i_index, Marking i_marking)
     if (rowIndex == ROWCOUNT)
         return true;
 
-    // Check coloumn
+    // Check along coloumn from left to right
     int columnIndex = 0;
     while(columnIndex < COLUMNCOUNT && m_ticTacToeGrid[i_index.x()][columnIndex] == i_marking)
     {
@@ -82,7 +88,8 @@ bool GameLogic::CheckForWin(QPoint i_index, Marking i_marking)
     if (columnIndex == COLUMNCOUNT)
         return true;
 
-    // Check downward diagonal
+    // Check diagonal left to right and down
+    // if row and column are the same value, we are on a diagonal square
     if (i_index.x() == i_index.y())
     {
         rowIndex = 0;
@@ -97,6 +104,8 @@ bool GameLogic::CheckForWin(QPoint i_index, Marking i_marking)
             return true;
     }
 
+    // Check diagonal left to right and up
+    // if row plus column are the same as max index (number of row/columns-1), we are on a diagonal square
     if ((i_index.x() + i_index.y()) == (ROWCOUNT-1))
     {
         rowIndex = (ROWCOUNT-1);

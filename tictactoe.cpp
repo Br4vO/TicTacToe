@@ -9,7 +9,10 @@ TicTacToe::TicTacToe(QWidget *parent)
 {
     ui->setupUi(this);
 
-    Init();
+    if(!Init())
+    {
+        qCritical("Tic tac Toe failed to initialize correctly!\n");
+    }
 }
 
 TicTacToe::~TicTacToe()
@@ -33,12 +36,24 @@ bool TicTacToe::Init()
             Q_ASSERT(button != nullptr);
             m_TTTButtons[row][column] = button;
 
-            connect(button, &QPushButton::clicked, this, [this, button, row, column] {TicTacToe::TicTacToeButtonPress(row, column);});
+            if (!connect(button, &QPushButton::clicked, this, [this, row, column] {TicTacToe::TicTacToeButtonPress(row, column);}))
+            {
+                qCritical("Button failed to connect to function.\n");
+                bSuccess = false;
+            }
         }
     }
 
-    connect(ui->resetButton, &QPushButton::clicked, this, &TicTacToe::ResetBoard);
-    connect(ui->computerStarts, &QRadioButton::clicked, this, &TicTacToe::SettingsChanged);
+    if(!connect(ui->resetButton, &QPushButton::clicked, this, &TicTacToe::ResetBoard))
+    {
+        qCritical("Reset button failed to connect to function.\n");
+        bSuccess = false;
+    }
+    if(!connect(ui->computerStarts, &QRadioButton::clicked, this, &TicTacToe::SettingsChanged))
+    {
+        qCritical("Computer starts setting radio button failed to connect to function.\n");
+        bSuccess = false;
+    }
 
     return bSuccess;
 }
@@ -67,7 +82,7 @@ void TicTacToe::ComputerPlay()
 // Slots
 //==================================================================================
 
-void TicTacToe::TicTacToeButtonPress(int i_row, int i_column)
+void TicTacToe::TicTacToeButtonPress(const int i_row, const int i_column)
 {
 
     m_TTTButtons[i_row][i_column]->setText("X");

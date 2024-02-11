@@ -27,7 +27,7 @@ private slots:
     // @param i_button: passes in the button pressed to mark it
     // @param i_row: row of button
     // @param i_column: column of button
-    void TicTacToeButtonPress(int i_row, int i_column);
+    void TicTacToeButtonPress(const int i_row, const int i_column);
 
     // Reset Board
     // Resets all UI elements and game state

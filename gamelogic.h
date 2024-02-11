@@ -19,13 +19,13 @@ public:
     // Handles the user input
     // @param i_index: index of button pressed
     // @returns: Result of Tic Tac Toe play
-    GameState UserPlay(QPoint i_index);
+    const GameState UserPlay(const QPoint i_index);
 
     // Computer Play function
     // Finds a random free spot on the board and passes it on
     // @param o_index: output index of button chosen. Is being used by the UI
     // @returns: Result of Tic Tac Toe play
-    GameState ComputerPlay(QPoint &o_index);
+    const GameState ComputerPlay(QPoint &o_index);
 
     // Reset Game function
     // Resets all game variables
@@ -41,19 +41,19 @@ private:
     // Function checks if a tile on the board is checked
     // @param i_index: index of tile to check
     // @returns: if tile is checked
-    inline bool isChecked(QPoint i_index) const { return m_ticTacToeGrid[i_index.x()][i_index.y()] != Marking::NOTMARKED;}
+    inline const bool isChecked(QPoint i_index) const { return m_ticTacToeGrid[i_index.x()][i_index.y()] != Marking::NOTMARKED;}
 
     // Mark Square function
     // Marks square based on input index and marking
     // @param i_index: index of tile to mark
     // @param i_marking: type of mark to set at index
-    GameState MarkSquare(QPoint i_index, Marking i_marking);
+    const GameState MarkSquare(const QPoint i_index, const Marking i_marking);
 
     // Check For Win function
     // Checks if previous play causes a win state. Checks rows, columns and diagonal conditions
     // @param i_index: square index from last play
     // @param i_mark: mark to compare with
-    bool CheckForWin(QPoint i_index, Marking i_mark);
+    const bool CheckForWin(const QPoint i_index, const Marking i_mark) const;
 
     const int COLUMNCOUNT = 3, ROWCOUNT = 3;
     const int m_totalSquares;

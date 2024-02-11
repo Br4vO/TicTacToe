@@ -5,20 +5,23 @@ GameLogic::GameLogic(QObject *parent)
     : QObject{parent}, m_totalSquares(ROWCOUNT*COLUMNCOUNT), m_ticTacToeGrid{Marking::NOTMARKED}
 {}
 
-GameState GameLogic::UserPlay(QPoint i_index)
+const GameState GameLogic::UserPlay(const QPoint i_index)
 {
     // Currently only marks the board
     return MarkSquare(i_index, Marking::X);
 }
 
-GameState GameLogic::ComputerPlay(QPoint &o_index)
+const GameState GameLogic::ComputerPlay(QPoint &o_index)
 {
     Q_ASSERT(m_moveCounter < m_totalSquares);
 
     // Generating random index for the board
     QPoint playPos {QRandomGenerator::global()->bounded(ROWCOUNT), QRandomGenerator::global()->bounded(COLUMNCOUNT)};
+
     // If spot is already marked, keep looping around the board until we find an available spot
     // This creates a very random opponent
+
+    int loopCounter = 0;
     while (isChecked(playPos))
     {
         if (playPos.y() < (COLUMNCOUNT-1))
@@ -37,6 +40,8 @@ GameState GameLogic::ComputerPlay(QPoint &o_index)
             }
             playPos.setY(0);
         }
+        loopCounter++;
+        Q_ASSERT(loopCounter < m_totalSquares);
     }
 
     // Returning square index computer selected
@@ -46,7 +51,7 @@ GameState GameLogic::ComputerPlay(QPoint &o_index)
     return MarkSquare(playPos, Marking::O);
 }
 
-GameState GameLogic::MarkSquare(QPoint i_index, Marking i_marking)
+const GameState GameLogic::MarkSquare(const QPoint i_index, const Marking i_marking)
 {
     Q_ASSERT(i_index.x() < ROWCOUNT && i_index.y() < COLUMNCOUNT);
 
@@ -68,7 +73,7 @@ GameState GameLogic::MarkSquare(QPoint i_index, Marking i_marking)
     return bState;
 }
 
-bool GameLogic::CheckForWin(QPoint i_index, Marking i_marking)
+const bool GameLogic::CheckForWin(const QPoint i_index, const Marking i_marking) const
 {
     int rowIndex = 0;
     // Check along row from left to right
